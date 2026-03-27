@@ -1,0 +1,77 @@
+# ============================================================
+# BirdCLEF 2026 — Pseudo-label Round 2 Configuration
+# ============================================================
+# Use after:
+#   1. Training with configs/improved.yaml (Round 1)
+#   2. Generating pseudo_labels.csv with src/pseudo_label.py
+#
+# Usage:
+#   python src/train.py --config configs/pseudo.yaml
+#
+# The pseudo-labelled data is mixed with real data via CombinedDataset.
+# The model is warm-started from Round 1 checkpoints by adjusting LRs.
+
+# Model — same architecture as Round 1
+model_name: tf_efficientnet_b3_ns
+pretrained: true
+use_gem_pooling: true
+gem_p: 3.0
+
+# Training — fewer epochs since the model is already well-initialised
+num_epochs: 15
+batch_size: 32
+learning_rate_backbone: 5.0e-5   # lower than Round 1 (model is converged)
+learning_rate_head: 5.0e-4
+weight_decay: 1.0e-6
+n_folds: 5
+seed: 42
+fp16: true
+early_stopping_patience: 4
+grad_clip: 1.0
+
+# Audio — must match Round 1 exactly
+sample_rate: 32000
+duration: 5
+n_mels: 224
+n_fft: 2048
+hop_length: 256
+fmin: 50
+fmax: 16000
+
+# SpecAugment — same as Round 1
+freq_mask_param: 27
+time_mask_param: 62
+num_freq_masks: 2
+num_time_masks: 2
+
+# Mixup
+mixup_alpha: 0.4
+
+# Secondary labels
+secondary_label_weight: 0.5
+
+# Focal Loss — same as Round 1
+use_focal_loss: true
+focal_gamma: 2.0
+focal_alpha: 0.25
+
+# Pink noise
+pink_noise_prob: 0.3
+pink_noise_snr_db_min: 5.0
+pink_noise_snr_db_max: 20.0
+
+# Pseudo-labelled data mixing
+pseudo_labels_path: /kaggle/working/pseudo_labels.csv
+pseudo_mix_ratio: 0.3         # fraction of each batch from pseudo-labelled data
+
+# Inference (same as improved.yaml)
+inference_overlap: 2.5
+inference_tta: false
+
+# Paths (Kaggle)
+train_audio_dir: /kaggle/input/birdclef-2026/train_audio
+train_metadata: /kaggle/input/birdclef-2026/train_metadata.csv
+taxonomy: /kaggle/input/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/birdclef-2026/sample_submission.csv
+output_dir: /kaggle/working/pseudo_round2

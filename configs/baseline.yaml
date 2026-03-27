@@ -1,0 +1,41 @@
+# Model
+model_name: efficientnet_b0
+pretrained: true
+num_classes: null  # Set automatically from data
+
+# Training
+num_epochs: 30
+batch_size: 32
+learning_rate: 1.0e-3
+weight_decay: 1.0e-6
+n_folds: 5
+seed: 42
+fp16: true
+early_stopping_patience: 5
+grad_clip: 1.0
+
+# Audio
+sample_rate: 32000
+duration: 5
+n_mels: 224
+n_fft: 2048
+hop_length: 256
+fmin: 50
+fmax: 16000
+
+# SpecAugment
+freq_mask_param: 20
+time_mask_param: 40
+num_freq_masks: 2
+num_time_masks: 2
+
+# Mixup
+mixup_alpha: 0.2
+
+# Paths (Kaggle)
+train_audio_dir: /kaggle/input/birdclef-2026/train_audio
+train_metadata: /kaggle/input/birdclef-2026/train_metadata.csv
+taxonomy: /kaggle/input/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/birdclef-2026/sample_submission.csv
+output_dir: /kaggle/working

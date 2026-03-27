@@ -1,0 +1,73 @@
+# ============================================================
+# BirdCLEF 2026 — Improved Configuration
+# ============================================================
+# Improvements over baseline.yaml:
+#   - EfficientNet B3-NS backbone (Noisy Student pretrained)
+#   - GeM Pooling instead of Global Average Pooling
+#   - Secondary label support with soft weighting
+#   - Focal Loss for class imbalance
+#   - Differential learning rates (backbone vs head)
+#   - Better mel-spectrogram params (more mels, finer hop)
+#   - Pink noise augmentation
+#   - Overlapping inference windows
+
+# Model
+model_name: tf_efficientnet_b3_ns
+pretrained: true
+use_gem_pooling: true
+gem_p: 3.0
+
+# Training
+num_epochs: 30
+batch_size: 32
+learning_rate_backbone: 1.0e-4
+learning_rate_head: 1.0e-3
+weight_decay: 1.0e-6
+n_folds: 5
+seed: 42
+fp16: true
+early_stopping_patience: 7
+grad_clip: 1.0
+
+# Audio
+sample_rate: 32000
+duration: 5
+n_mels: 224
+n_fft: 2048
+hop_length: 256
+fmin: 50
+fmax: 16000
+
+# SpecAugment — scaled for n_mels=224, ~626 time frames
+freq_mask_param: 27    # ~12% of 224 mels
+time_mask_param: 62    # ~10% of 626 frames
+num_freq_masks: 2
+num_time_masks: 2
+
+# Mixup — stronger alpha works better with soft secondary labels
+mixup_alpha: 0.4
+
+# Secondary labels — soft positive weight for non-primary species
+secondary_label_weight: 0.5
+
+# Focal Loss
+use_focal_loss: true
+focal_gamma: 2.0
+focal_alpha: 0.25
+
+# Pink noise augmentation
+pink_noise_prob: 0.3
+pink_noise_snr_db_min: 5.0
+pink_noise_snr_db_max: 20.0
+
+# Inference
+inference_overlap: 2.5   # seconds of overlap between sliding windows
+inference_tta: false      # TTA disabled to stay within 90-min CPU budget
+
+# Paths (Kaggle)
+train_audio_dir: /kaggle/input/birdclef-2026/train_audio
+train_metadata: /kaggle/input/birdclef-2026/train_metadata.csv
+taxonomy: /kaggle/input/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/birdclef-2026/sample_submission.csv
+output_dir: /kaggle/working
