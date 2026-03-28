@@ -6,34 +6,34 @@ AIエージェントとしての操作権限を以下の構造で定義します
 ```json
 {
   "terminal_commands": {
-    "allow": ["ls",
-    "pwd", 
-    "cat",
-    "grep",
-    "find . -maxdepth 3", // 現在のプロジェクト以下の浅い階層を探す
-    "ls",
-    "pwd",
-    "grep",
-    "git status",
-    "pytest",
-    "web_search": {
-  "status": "fully_enabled",
-  "auto_approve_queries": true, 
-  "reason": "To minimize manual confirmation popups for search keywords."
-}
+    "allow": [
+      "ls", "pwd", "cat", "grep", "find . -maxdepth 3",
+      "git status", "pytest"
     ],
-    
-    "require_approval": ["touch", "mkdir", "cp", "mv", "pip install", "npm install", "git add"],
-    "deny": ["rm -rf", "chmod 777", "sudo", "curl -X POST", "git push"]
+    "require_approval": [
+      "touch", "mkdir", "cp", "mv", "pip install", "npm install", "git add"
+    ],
+    "deny": [
+      "rm -rf", "chmod 777", "sudo", "curl -X POST", "git push"
+    ]
   },
   "file_access": {
     "read": ["*"],
-    "write": ["src/", "tests/", "docs/"],
-    "deny": [".env", "*.pem", "credentials.json", ".git/"]
+    "write": ["src/", "tests/", "docs/", "notebooks/","CHANGELOG.md"],
+    "deny": [".env", "*.pem", "credentials.json", ".git/", "input/"] 
   },
   "web_browsing": {
     "enabled": true,
-    "purpose": ["library_docs", "error_resolution", "latest_tech_specs"]
+    "status": "fully_enabled",
+    "auto_approve_queries": true,
+    "purpose": [
+      "library_docs",
+      "error_resolution",
+      "latest_tech_specs",
+      "kaggle_discussions_analysis",
+      "domain_knowledge_acquisition"
+    ],
+    "reason": "To minimize manual confirmation popups for search keywords and URL fetching."
   }
 }
 

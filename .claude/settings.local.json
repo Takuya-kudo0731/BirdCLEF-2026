@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.competehub.dev)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:tekkix.com)",
+      "WebFetch(domain:www.imageclef.org)"
+    ]
+  }
+}

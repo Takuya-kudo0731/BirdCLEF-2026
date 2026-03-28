@@ -274,10 +274,44 @@ def train(cfg, fold_override: int | None = None) -> None:
     logger.info("After dropping missing labels: %d rows.", len(df))
 
     # ------------------------------------------------------------------
+    # Build secondary-label map: species_code → primary_label (iNat ID).
+    # In BirdCLEF 2026, secondary_labels use 6-letter bird codes (e.g.
+    # 'grekis') but primary_label (and the label encoder) use iNat taxon
+    # IDs (e.g. '1161364').  taxonomy.csv bridges the two systems via
+    # species_code and primary_label columns.
+    # ------------------------------------------------------------------
+    secondary_label_map: dict = {}
+    tax_path = getattr(cfg, "taxonomy", None)
+    if tax_path and os.path.exists(tax_path):
+        try:
+            tax = pd.read_csv(tax_path)
+            tax["primary_label"] = tax["primary_label"].astype(str)
+            if "species_code" in tax.columns:
+                secondary_label_map = dict(
+                    zip(tax["species_code"], tax["primary_label"])
+                )
+                logger.info(
+                    "Loaded secondary-label map from taxonomy.csv: %d entries",
+                    len(secondary_label_map),
+                )
+            else:
+                logger.warning(
+                    "taxonomy.csv has no 'species_code' column — "
+                    "secondary labels will be skipped. Columns: %s",
+                    tax.columns.tolist(),
+                )
+        except Exception as exc:
+            logger.warning("Could not load taxonomy.csv: %s", exc)
+    else:
+        logger.warning(
+            "taxonomy.csv not found at '%s' — secondary labels will be skipped.", tax_path
+        )
+
+    # ------------------------------------------------------------------
     # Encode labels.
     # ------------------------------------------------------------------
     le = LabelEncoder()
-    le.fit(df["primary_label"])
+    le.fit(df["primary_label"].astype(str))
     num_classes = len(le.classes_)
     cfg.num_classes = num_classes
     logger.info("Number of classes: %d", num_classes)
@@ -327,7 +361,10 @@ def train(cfg, fold_override: int | None = None) -> None:
         # --------------------------------------------------------------
         # Datasets & loaders.
         # --------------------------------------------------------------
-        train_ds_base = BirdCLEFDataset(train_df, cfg, le, mode="train")
+        train_ds_base = BirdCLEFDataset(
+            train_df, cfg, le, mode="train",
+            secondary_label_map=secondary_label_map,
+        )
 
         # Mix in pseudo-labelled data if a CSV path is configured.
         pseudo_csv = getattr(cfg, "pseudo_labels_path", None)
@@ -335,7 +372,10 @@ def train(cfg, fold_override: int | None = None) -> None:
             pseudo_df = pd.read_csv(pseudo_csv)
             # Re-use train_audio_dir as the root; pseudo CSV stores filenames
             # relative to the soundscapes dir, so override audio root if needed.
-            pseudo_ds_base = BirdCLEFDataset(pseudo_df, cfg, le, mode="train")
+            pseudo_ds_base = BirdCLEFDataset(
+                pseudo_df, cfg, le, mode="train",
+                secondary_label_map=secondary_label_map,
+            )
             pseudo_ratio = getattr(cfg, "pseudo_mix_ratio", 0.3)
             train_ds_base = CombinedDataset(train_ds_base, pseudo_ds_base, pseudo_ratio)
             logger.info(

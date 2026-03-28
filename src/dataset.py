@@ -221,15 +221,23 @@ class BirdCLEFDataset(Dataset):
         ``'train'`` enables random segment extraction, SpecAugment, pink
         noise, and secondary labels; ``'val'``/``'test'`` starts from
         offset 0 and uses only the primary label.
+    secondary_label_map:
+        Optional dict mapping species_code (6-letter bird code used in
+        ``secondary_labels`` column) to primary_label (iNat taxon ID used
+        by the label encoder).  Built from taxonomy.csv in train.py.
+        Without this map, secondary labels are silently ignored because
+        the label encoder is fitted on iNat IDs, not bird codes.
     """
 
-    def __init__(self, df, cfg, label_encoder, mode: str = "train"):
+    def __init__(self, df, cfg, label_encoder, mode: str = "train",
+                 secondary_label_map: dict | None = None):
         self.df = df.reset_index(drop=True)
         self.cfg = cfg
         self.label_encoder = label_encoder
         self.mode = mode
         self.num_classes = len(label_encoder.classes_)
         self.transforms = get_transforms(mode, cfg)
+        self.secondary_label_map = secondary_label_map or {}
 
     def __len__(self) -> int:
         return len(self.df)
@@ -324,8 +332,12 @@ class BirdCLEFDataset(Dataset):
                 if not _is_missing(sec_raw):
                     sec_labels = _parse_secondary_labels(str(sec_raw))
                     for sl in sec_labels:
+                        # secondary_labels use 6-letter bird codes (e.g. 'grekis'),
+                        # but the label encoder is fitted on iNat taxon IDs.
+                        # Translate via taxonomy map if available.
+                        sl_id = self.secondary_label_map.get(sl, sl)
                         try:
-                            sec_idx = self.label_encoder.transform([sl])[0]
+                            sec_idx = self.label_encoder.transform([sl_id])[0]
                             # Don't overwrite a primary label's higher weight.
                             if label_vector[sec_idx] < secondary_weight:
                                 label_vector[sec_idx] = secondary_weight

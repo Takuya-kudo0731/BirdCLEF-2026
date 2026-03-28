@@ -1,0 +1,16 @@
+{
+  "allowedTools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Glob",
+    "Grep",
+    "Bash(ls*)",
+    "Bash(pwd)",
+    "Bash(git status)",
+    "Bash(git diff*)",
+    "Bash(git log*)",
+    "Bash(pytest*)",
+    "Bash(find . -maxdepth*)"
+  ]
+}

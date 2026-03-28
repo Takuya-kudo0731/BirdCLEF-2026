@@ -65,9 +65,9 @@ inference_overlap: 2.5   # seconds of overlap between sliding windows
 inference_tta: false      # TTA disabled to stay within 90-min CPU budget
 
 # Paths (Kaggle)
-train_audio_dir: /kaggle/input/birdclef-2026/train_audio
-train_metadata: /kaggle/input/birdclef-2026/train_metadata.csv
-taxonomy: /kaggle/input/birdclef-2026/taxonomy.csv
-test_soundscapes_dir: /kaggle/input/birdclef-2026/test_soundscapes
-sample_submission: /kaggle/input/birdclef-2026/sample_submission.csv
+train_audio_dir: /kaggle/input/competitions/birdclef-2026/train_audio
+train_metadata: /kaggle/input/competitions/birdclef-2026/train.csv
+taxonomy: /kaggle/input/competitions/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/competitions/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/competitions/birdclef-2026/sample_submission.csv
 output_dir: /kaggle/working

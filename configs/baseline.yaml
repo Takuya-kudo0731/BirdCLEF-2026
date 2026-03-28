@@ -33,9 +33,9 @@ num_time_masks: 2
 mixup_alpha: 0.2
 
 # Paths (Kaggle)
-train_audio_dir: /kaggle/input/birdclef-2026/train_audio
-train_metadata: /kaggle/input/birdclef-2026/train_metadata.csv
-taxonomy: /kaggle/input/birdclef-2026/taxonomy.csv
-test_soundscapes_dir: /kaggle/input/birdclef-2026/test_soundscapes
-sample_submission: /kaggle/input/birdclef-2026/sample_submission.csv
+train_audio_dir: /kaggle/input/competitions/birdclef-2026/train_audio
+train_metadata: /kaggle/input/competitions/birdclef-2026/train.csv
+taxonomy: /kaggle/input/competitions/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/competitions/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/competitions/birdclef-2026/sample_submission.csv
 output_dir: /kaggle/working
