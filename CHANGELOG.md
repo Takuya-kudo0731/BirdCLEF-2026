@@ -11,6 +11,79 @@
 
 ---
 
+## 2026-03-28 — Perch v2 ベースライン構築 & 初回提出
+
+### 作業内容
+1. Google Perch v2 の調査・ドキュメント化
+2. Perch v2 Embedding + LogisticRegression のベースラインノートブック作成
+3. TFLite 変換パイプライン構築（Kaggle TF互換性問題の回避）
+4. 初回コンペ提出
+
+### 作成・変更ファイル
+| ファイル | 内容 |
+|---|---|
+| `notebooks/perch_v2_baseline.ipynb` | 学習用: Embedding抽出 + CV + TFLite変換（Internet ON, GPU） |
+| `notebooks/perch_v2_submit.ipynb` | 提出用: TFLite推論 + submission.csv生成（Internet OFF, CPU） |
+| `docs/terms_and_qa.md` | Perch v2 の項目追加 |
+
+### CV スコア
+- **CV Mean cmAP: 0.8665** (+/- 0.0053) — LogisticRegression (C=0.1) on 1536-dim Perch v2 embeddings
+
+### 技術的な問題と解決
+1. **XlaCallModuleOp version 10 エラー**: Perch v2 SavedModel が TF 2.20+ を要求。Kaggle標準TFでは動かない
+   → `pip install tensorflow>=2.20` で解決（学習ノートブック側）
+2. **CUDA platform エラー**: Save & Run All で GPU なしで実行された
+   → Settings で GPU T4 x2 を明示的に設定
+3. **提出用ノートブックでの TF 互換性**: Internet OFF では pip install 不可
+   → TFLite に変換して提出用ノートブックでは `tf.lite.Interpreter` のみ使用
+4. **IndexError in CV**: 少数サンプルクラスが fold から欠落
+   → `clf.classes_` を使った列マッピングで修正
+
+### Kaggle ノートブック構成
+| ノートブック | 目的 | GPU | Internet |
+|---|---|---|---|
+| `notebook1e05bbc851` | 学習 + TFLite変換 | GPU T4 x2 | ON |
+| `notebookff23091339` | 提出 (TFLite推論) | CPU | OFF |
+
+### 提出状態
+- 初回提出済み（スコア待ち）
+
+---
+
+## 2026-03-28 — EDA ノートブック文字化け修正
+
+### 作業内容
+`notebooks/eda_kaggle.ipynb` のマークダウンセルのUTF-8文字化け（mojibake）を修正。
+コードセルの1文字ずつ改行問題も修正。
+
+### 変更ファイル
+| ファイル | 変更内容 |
+|---|---|
+| `notebooks/eda_kaggle.ipynb` | 17セルのエンコーディング修正 + 2セルの行フォーマット修正 |
+
+### 原因
+ノートブックの source がlatin-1エンコードのバイト列をUTF-8として読んだ際に二重エンコーディングが発生。
+`encode('latin-1').decode('utf-8')` で全セルを修復。
+
+---
+
+## 2026-03-28 — EDA ノートブック置き換え
+
+### 作業内容
+`notebooks/eda_kaggle.ipynb` を Kaggle 実行済みの出力付きノートブックに置き換え。
+
+### 変更ファイル
+| ファイル | 変更内容 |
+|---|---|
+| `notebooks/eda_kaggle.ipynb` | 空のテンプレート → Kaggle 実行済み版（876KB、グラフ・出力含む） |
+
+### 備考
+- 元ファイル: `Downloads/notebook8b449683e6.ipynb`
+- このファイルは**参照用の実行済み記録**として保持
+- 再実行する場合は `train_kaggle.ipynb`（修正済み）を使用すること
+
+---
+
 ## 2026-03-28 — EDA 結果分析
 
 ### 作業内容

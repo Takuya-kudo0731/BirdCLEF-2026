@@ -184,4 +184,51 @@ y_mix = λ * y1 + (1-λ) * y2    # ラベルも補間
 - BirdCLEFでも同じ発想で`pseudo_label.py`が疑似ラベリングを実装
 
 ---
+
+## Google Perch v2
+
+**質問日:** 2026-03-28
+**質問:** 「Perch V2ってのをいろいろ調べて私に教えて」
+
+**一言:** Google DeepMind が開発した生物音響分類モデル。154万録音・約15,000種で事前学習済み。高品質な1536次元Embeddingを提供。
+
+**アーキテクチャ:**
+- バックボーン: **EfficientNet-B3**（12Mパラメータ）— Transformerではない
+- 入力: 5秒モノラル音声、32kHz（160,000サンプル）
+- フロントエンド: ログメルスペクトログラム（500フレーム × 128 mel bins）
+- Embedding出力: **1536次元**ベクトル
+- 分類出力: 約15,000クラスのlogit
+
+**v1 → v2 の進化:**
+| | v1 | v2 |
+|---|---|---|
+| バックボーン | EfficientNet-B1 | EfficientNet-B3 |
+| Embedding | 1280次元 | 1536次元 |
+| 対象 | 鳥のみ | 鳥+昆虫+カエル+哺乳類 |
+| 学習データ | Xeno-Canto のみ | XC + iNaturalist + 他（154万録音） |
+| BirdSet ROC-AUC | 0.839 | 0.908 |
+
+**学習手法:**
+- 2フェーズ学習（分類器学習 → 自己蒸留）
+- マルチコンポーネントMixup（複数音声混合）
+- ソース予測（DIET: 5秒ウィンドウから元録音を予測する補助タスク）
+
+**BirdCLEFでの使い方:**
+```
+音声 → Perch v2 → 1536次元Embedding → LogisticRegression or MLP → 予測
+```
+- logitをそのまま使うのは非推奨（レア種が未キャリブレーション）
+- 16サンプル/クラスのfew-shotでも高性能（論文実績）
+- TFLite変換で推論10倍高速化が必須（CPU 90分制約対策）
+- ライブラリ: `perch-hoplite`（古い `google-research/perch` は非推奨）
+
+**競技での位置づけ:**
+- Perch v2 単体 = 強いベースライン（LB 0.908）だが上位入賞には不足
+- BirdCLEF 2025の2位（0.928）はPerch不使用、カスタムCNN fine-tuningが主流
+- **自前EfficientNetパイプライン + Perch v2 Embeddingのアンサンブルが最適戦略**
+
+**論文:** "Perch 2.0: The Bittern Lesson for Bioacoustics"（arXiv, 2025年8月）
+**Kaggle Models:** `google/bird-vocalization-classifier` → `perch_v2` バリアント
+
+---
 <!-- 新しい用語・質問は上に追記してください -->

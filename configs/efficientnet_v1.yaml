@@ -1,0 +1,72 @@
+# ============================================================
+# BirdCLEF 2026 — EfficientNet v1 Configuration
+# ============================================================
+# improved.yaml からの変更点:
+#   1. Focal Loss → BCE (2025年上位実績)
+#   2. hop_length 256 → 512 (サウンドスケープ汎化)
+#   3. n_mels 224 → 128 (上位解法標準、計算量削減)
+#   4. num_epochs 30 → 5 (2025年知見: 5エポック超は過学習)
+#   5. early_stopping 7 → 3
+#   6. SpecAugment パラメータを n_mels=128 に合わせて調整
+#
+# 実験ID: efficientnet_v1
+# 日付: 2026-03-28
+
+# Model
+model_name: tf_efficientnet_b3_ns
+pretrained: true
+use_gem_pooling: true
+gem_p: 3.0
+
+# Training
+num_epochs: 5
+batch_size: 32
+learning_rate_backbone: 1.0e-4
+learning_rate_head: 1.0e-3
+weight_decay: 1.0e-6
+n_folds: 5
+seed: 42
+fp16: true
+early_stopping_patience: 3
+grad_clip: 1.0
+
+# Audio
+sample_rate: 32000
+duration: 5
+n_mels: 128
+n_fft: 2048
+hop_length: 512
+fmin: 50
+fmax: 16000
+
+# SpecAugment — adjusted for n_mels=128, ~313 time frames (5s * 32000 / 512)
+freq_mask_param: 16    # ~12% of 128 mels
+time_mask_param: 31    # ~10% of 313 frames
+num_freq_masks: 2
+num_time_masks: 2
+
+# Mixup
+mixup_alpha: 0.4
+
+# Secondary labels
+secondary_label_weight: 0.5
+
+# Loss — BCE (NOT Focal Loss)
+use_focal_loss: false
+
+# Pink noise augmentation
+pink_noise_prob: 0.3
+pink_noise_snr_db_min: 5.0
+pink_noise_snr_db_max: 20.0
+
+# Inference
+inference_overlap: 2.5
+inference_tta: false
+
+# Paths (Kaggle)
+train_audio_dir: /kaggle/input/competitions/birdclef-2026/train_audio
+train_metadata: /kaggle/input/competitions/birdclef-2026/train.csv
+taxonomy: /kaggle/input/competitions/birdclef-2026/taxonomy.csv
+test_soundscapes_dir: /kaggle/input/competitions/birdclef-2026/test_soundscapes
+sample_submission: /kaggle/input/competitions/birdclef-2026/sample_submission.csv
+output_dir: /kaggle/working
