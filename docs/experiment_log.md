@@ -50,8 +50,64 @@
 | freq_mask_param | 27 | **16** | n_mels=128 に合わせて (~12%) |
 | time_mask_param | 62 | **31** | hop_length=512 に合わせて (~10%) |
 
+### 結果
+- **Fold 0 Best cmAP: 0.7142**（5エポック全て改善、early stopping 未発動）
+- **LB Score: 0.640**
+
 ### 考察
-（実行後に記入）
+- Perch v2 (0.704) より低い。fold 0 のみ + 5エポックでは不足
+- GPU 時間の制約が厳しい（1 fold ≒ 8時間）
+
+---
+
+## EXP-002: Perch v2 + MLP (2層NN)
+
+| 項目 | 値 |
+|---|---|
+| **日付** | 2026-03-29 |
+| **モデル** | Perch v2 Embedding (1536-dim) + MLP (1536→512→206) |
+| **損失関数** | CrossEntropyLoss |
+| **CV cmAP** | **0.8649 (+/- 0.0071)** |
+| **LB Score** | — (未提出) |
+
+### Fold別結果
+| Fold | Best cmAP | Early Stop |
+|------|-----------|------------|
+| 0 | 0.8552 | epoch 9 |
+| 1 | 0.8609 | epoch 9 |
+| 2 | 0.8623 | epoch 15 |
+| 3 | 0.8723 | epoch 13 |
+| 4 | 0.8739 | epoch 9 |
+
+### 考察
+- CV は LogReg (0.8665) とほぼ同等 → Perch Embedding の線形分離性が高い
+- MLP にしても改善されない → 分類器の変更では限界
+
+---
+
+## EXP-003: Perch v2 + MLP + Overlap推論
+
+| 項目 | 値 |
+|---|---|
+| **日付** | 2026-03-29 |
+| **モデル** | EXP-002 の MLP + 2.5秒オーバーラップ推論 |
+| **LB Score** | **0.694** |
+
+### 考察
+- LogReg baseline (0.704) より **悪化**
+- オーバーラップ推論は改善に寄与しなかった
+- MLP の softmax 出力を平均することで確信度が薄まった可能性
+
+---
+
+## 全提出スコアまとめ
+
+| # | モデル | CV cmAP | LB Score |
+|---|---|---|---|
+| EXP-000 | Perch v2 + LogReg | 0.8665 | **0.704** ← ベスト |
+| EXP-001 | EfficientNet-B3 (fold 0) | 0.7142 | 0.640 |
+| EXP-002 | Perch v2 + MLP | 0.8649 | 未提出 |
+| EXP-003 | Perch v2 + MLP + Overlap | — | 0.694 |
 
 ---
 
